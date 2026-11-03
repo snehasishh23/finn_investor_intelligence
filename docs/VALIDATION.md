@@ -57,3 +57,7 @@ The project was deployed through Vercel Drop after the user signed in and comple
 After the user configured the Vercel secret, `/api/health` reported `research_configured: true`. All four hosted demo research tickers returned 200 and seven sections. Invalid window/mode requests returned 422. The first live TCS request exceeded the 290-second client timeout; live synthesis has not been marked as passing.
 
 Large PDFs on Vercel now extract at most 32 evenly spaced pages, retaining original page positions and partial-coverage warnings. Selected chunks from each document share one extraction call. Provider quota/configuration errors now return an actionable message. Two additional tests cover page-position preservation and provider quota errors (30 tests total).
+
+## Model availability fix
+
+The optimized hosted request returned Gemini HTTP 404 in 2 seconds. The configured key was recognized, but the hard-coded model ID was unavailable. Added account-supported model discovery and tests for excluding image/audio variants, choosing current stable text models and preserving explicit overrides. The suite now has 32 passing tests. Live success must still be verified after deployment.

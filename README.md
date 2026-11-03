@@ -24,12 +24,12 @@ To enable live document analysis, export `GEMINI_API_KEY` **before starting** th
 ```bash
 export GEMINI_API_KEY='your-key'
 # Optional model overrides:
-export FAST_MODEL=gemini-2.5-flash
-export STRONG_MODEL=gemini-2.5-pro
+export FAST_MODEL=auto
+export STRONG_MODEL=auto
 uvicorn app:app --reload
 ```
 
-Switch the header from **Demo** to **Live**. Market and announcement data require no model key. PDF research and results extraction require a key and consume provider quota. Model availability depends on your Google account; override the model IDs as needed. The [provider API reference](https://ai.google.dev/api/generate-content) documents the REST endpoint.
+Switch the header from **Demo** to **Live**. Market and announcement data require no model key. PDF research and results extraction require a key and consume provider quota. Model availability depends on your Google account; override the model IDs as needed. Auto selection queries the account’s supported model list: Flash-Lite for extraction and Flash for synthesis where available, with explicit model overrides supported. The [provider API reference](https://ai.google.dev/api/generate-content) documents the REST endpoint.
 
 ## A two-minute walkthrough
 

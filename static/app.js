@@ -84,7 +84,17 @@ function sourceLink(url, label = "Original filing ↗") {
 }
 async function api(path, options) {
   const response = await fetch(path, options);
-  const data = await response.json();
+  const raw = await response.text();
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new Error(
+      response.status === 504
+        ? "The hosting time limit was reached. Retry to reuse cached extraction."
+        : "The server did not return a research response. Please retry shortly.",
+    );
+  }
   if (!response.ok)
     throw new Error(
       typeof data.detail === "string"
@@ -168,19 +178,100 @@ function citations(claim, report) {
 function renderClaim(claim, report) {
   return `${E(claim?.text || "No matching delivered evidence found.")}${citations(claim, report)}`;
 }
+const companies = {
+  RELIANCE: "Reliance Industries",
+  TCS: "Tata Consultancy Services",
+  HDFCBANK: "HDFC Bank",
+  INFY: "Infosys",
+  ICICIBANK: "ICICI Bank",
+  SUNPHARMA: "Sun Pharmaceutical",
+  TATAMOTORS: "Tata Motors",
+  ITC: "ITC",
+  LT: "Larsen & Toubro",
+  BHARTIARTL: "Bharti Airtel",
+  ASIANPAINT: "Asian Paints",
+  TITAN: "Titan Company",
+  DIXON: "Dixon Technologies",
+  ETERNAL: "Eternal",
+  KPITTECH: "KPIT Technologies",
+  PERSISTENT: "Persistent Systems",
+};
+function companyRows() {
+  const query = (state.companyFilter || "").toLowerCase();
+  const items = Object.entries(companies).filter(
+    ([symbol, name]) =>
+      (state.mode === "live" ||
+        ["TCS", "DIXON", "INFY", "HDFCBANK"].includes(symbol)) &&
+      (symbol + " " + name).toLowerCase().includes(query),
+  );
+  return (
+    items
+      .map(
+        ([symbol, name]) =>
+          `<button class="company-option ${state.ticker === symbol ? "selected" : ""}" data-ticker="${symbol}" ${state.researchBusy ? "disabled" : ""}><strong>${symbol}</strong><span>${E(name)}</span></button>`,
+      )
+      .join("") ||
+    '<p class="muted small">No matching holding. Enter any NSE ticker in the research box.</p>'
+  );
+}
+function sectionTab(title) {
+  if (/cash/i.test(title)) return "cash";
+  if (/trajectory|growth|trend/i.test(title)) return "trajectory";
+  if (/bull|bear/i.test(title)) return "cases";
+  return "snapshot";
+}
 function reportHTML(r) {
-  return `<div class="section-label">${E(r.ticker)} · ${r.mode === "demo" ? "ILLUSTRATIVE RESEARCH" : "PRIMARY-SOURCE RESEARCH"}</div>${r.warnings.map((w) => `<div class="notice">${E(w)}</div>`).join("")}${r.sections.map((s) => `<section class="research-section"><h2>${E(s.title)}</h2>${s.claims.map((c) => `<div class="claim">${renderClaim(c, r)}</div>`).join("")}${s.missing ? `<p class="muted small">${E(s.missing)}</p>` : ""}</section>`).join("")}<section class="card"><h2>Promises, meet performance.</h2><p>Earlier guidance compared with matching later results.</p>${r.guidance.map((g) => `<div class="guidance-row"><div class="guidance-head">${E(g.period)}<span class="verdict ${E(g.status)}">${E(g.status)}</span></div><div class="comparison"><div><span>PROMISED</span><p>${renderClaim(g.promise, r)}</p></div><div><span>DELIVERED</span><p>${renderClaim(g.delivered, r)}</p></div></div></div>`).join("") || "<p>No explicit, comparable guidance found. No verdict assigned.</p>"}</section>${r.sources.length ? `<section><h2>Open the evidence.</h2>${r.sources.map((s) => `<div class="source">${sourceLink(s.url, `${s.id} · ${s.kind} · ${s.title}`)}<div class="muted small">${s.covered_pages.length} of ${s.pages} pages represented in analysed chunks${s.partial ? " · Partial coverage" : ""}</div></div>`).join("")}<p class="muted small">${E(r.evidence_notice)}</p></section>` : ""}`;
+  const tabs = {
+    snapshot: "Snapshot",
+    trajectory: "Trajectory",
+    cash: "Cash quality",
+    guidance: "Guidance",
+    cases: "Bull / bear",
+    sources: "Sources",
+  };
+  const current = state.researchTab || "snapshot";
+  const sections = r.sections.filter((s) => sectionTab(s.title) === current);
+  let body = sections
+    .map(
+      (s) =>
+        `<section class="research-section"><h3>${E(s.title)}</h3>${s.claims.map((c) => `<div class="claim">${renderClaim(c, r)}</div>`).join("")}${s.missing ? `<p class="muted small">${E(s.missing)}</p>` : ""}</section>`,
+    )
+    .join("");
+  if (current === "guidance")
+    body = `<section><h3>Promises, meet performance.</h3><p class="muted small">Earlier explicit guidance compared with matching later results.</p>${r.guidance.map((g) => `<div class="guidance-row"><div class="guidance-head">${E(g.period)}<span class="verdict ${E(g.status)}">${E(g.status)}</span></div><div class="comparison"><div><span>PROMISED</span><p>${renderClaim(g.promise, r)}</p></div><div><span>DELIVERED</span><p>${renderClaim(g.delivered, r)}</p></div></div></div>`).join("") || '<p class="muted">No explicit, comparable guidance was found. No verdict assigned.</p>'}</section>`;
+  if (current === "sources")
+    body = r.sources.length
+      ? `<section><h3>Open the evidence.</h3>${r.sources.map((s) => `<div class="source">${sourceLink(s.url, `${s.id} · ${s.kind} · ${s.title}`)}<div class="muted small">${s.covered_pages.length} of ${s.pages} pages represented in analysed chunks${s.partial ? " · Partial coverage" : ""}</div></div>`).join("")}<p class="muted small">${E(r.evidence_notice)}</p>${r.models ? `<p class="muted small">Extraction: ${E(r.models.extraction)} · Synthesis: ${E(r.models.synthesis)}</p>` : ""}</section>`
+      : '<p class="muted">Illustrative demo. No primary documents were analysed.</p>';
+  return `<div class="report-heading"><div><div class="eyebrow">${E(r.ticker)} · NSE</div><h2>${E(companies[r.ticker] || r.ticker)}</h2></div><span class="evidence-badge">${r.mode === "demo" ? "ILLUSTRATIVE DEMO" : `${r.sources.length} PRIMARY DOCUMENTS`}</span></div>${r.mode === "demo" ? '<div class="notice">Fictional research example. Switch to Live for document analysis.</div>' : r.warnings.length ? `<details class="coverage-disclosure"><summary>Partial coverage · ${r.warnings.length} source notices</summary>${r.warnings.map((w) => `<p class="small muted">${E(w)}</p>`).join("")}</details>` : ""}<div class="research-tabs" role="tablist" aria-label="Research sections">${Object.entries(
+    tabs,
+  )
+    .map(
+      ([key, label]) =>
+        `<button role="tab" aria-selected="${key === current}" class="research-tab ${key === current ? "selected" : ""}" data-research-tab="${key}">${label}</button>`,
+    )
+    .join(
+      "",
+    )}</div><div class="report-content" role="tabpanel">${body || '<p class="muted">This section was not established from the available evidence.</p>'}</div>`;
 }
 function researchView() {
+  const content = state.researchBusy
+    ? `<div class="research-loading"><div class="loading"></div><h2>Reading the primary sources.</h2><p class="muted">Extracting evidence and checking document/page references.</p><p id="research-progress" class="small muted" role="status">First runs take longer than cached research.</p></div>`
+    : state.researchError
+      ? `<div class="research-error" role="alert"><h2>Research could not finish.</h2><p>${E(state.researchError)}</p><button class="primary" id="retry-research">Retry research ↗</button></div>`
+      : state.report
+        ? reportHTML(state.report)
+        : '<div class="research-welcome"><div class="eyebrow">BUSINESS · CASH · GUIDANCE</div><h2>Start with a company.<br>Follow the evidence.</h2><p class="muted">Choose a holding or enter any NSE ticker. Every live claim links to the annual report or earnings-call page behind it.</p></div>';
   return (
     pageHead(
       "ON-DEMAND DUE DILIGENCE",
-      "Go to the source.",
-      "Annual reports and earnings calls. Evidence beside every claim.",
+      "Research, with evidence.",
+      "Understand the business. Test the promises. Open the source.",
     ) +
-    `<form class="research-form" id="research-form"><input id="ticker" aria-label="NSE ticker" placeholder="Enter any NSE ticker" value="${E(state.ticker)}" maxlength="28" required><button class="primary" ${state.researchBusy ? "disabled" : ""}>${state.researchBusy ? "Reading…" : "Research ↗"}</button></form><div class="chips">${["TCS", "DIXON", "INFY", "HDFCBANK"].map((t) => `<button class="chip" data-ticker="${t}">${t}</button>`).join("")}</div><p class="small muted">${state.mode === "demo" ? "Demo research: TCS, DIXON, INFY and HDFCBANK. Choose Live for source-backed analysis." : "Any NSE ticker with accessible annual reports or transcripts. First run can take several minutes; repeat extractions are cached."}</p>${state.researchError ? `<p class="error" role="alert">${E(state.researchError)}</p><button class="secondary" id="retry-research">Retry research</button>` : ""}${state.researchBusy ? '<div class="loading"></div><p class="muted small" role="status">Discovering primary documents, extracting evidence and checking page references…</p>' : state.report ? reportHTML(state.report) : '<div class="empty">Start with a ticker.<br>Trace the business, the cash and the promises.</div>'}`
+    `<div class="research-workspace"><aside class="company-picker"><label class="eyebrow" for="company-filter">COMPANIES</label><input id="company-filter" aria-label="Filter companies" placeholder="Find a holding…" value="${E(state.companyFilter || "")}"><div id="company-list">${companyRows()}</div></aside><div class="research-detail"><form class="research-form" id="research-form"><input id="ticker" aria-label="NSE ticker" placeholder="Any NSE ticker, e.g. TCS" value="${E(state.ticker)}" maxlength="28" required><button class="primary" ${state.researchBusy ? "disabled" : ""}>${state.researchBusy ? "Reading…" : "Research ↗"}</button></form><p class="small muted">${state.mode === "demo" ? "Four fictional examples. Select Live above for source-grounded analysis." : "Annual reports and transcripts only · missing evidence stays unknown."}</p><article class="research-report">${content}</article></div></div>`
   );
 }
+
 function quoteList() {
   return (
     (state.data?.P || [])
@@ -192,6 +283,9 @@ function quoteList() {
   );
 }
 function render() {
+  document
+    .querySelector(".layout")
+    .classList.toggle("research-layout", state.view === "research");
   notice();
   $("#content").innerHTML = (
     state.view === "digest"
@@ -256,7 +350,9 @@ async function waitJob(data) {
 }
 async function runResearch(symbol) {
   if (state.researchBusy) return;
-  state.ticker = symbol.trim().toUpperCase();
+  state.ticker = symbol.trim().toUpperCase().replace(/\.NS$/, "");
+  state.researchTab = "snapshot";
+  state.researchStarted = Date.now();
   state.view = "research";
   state.researchError = "";
   state.report = null;
@@ -329,12 +425,20 @@ document.addEventListener("click", (event) => {
     save();
     render();
   }
+  if (b.dataset.researchTab) {
+    state.researchTab = b.dataset.researchTab;
+    render();
+  }
   if (b.dataset.ticker) runResearch(b.dataset.ticker);
   if (b.dataset.extract) extractResults(b.dataset.extract, b);
   if (b.id === "refresh") load();
   if (b.id === "retry-research") runResearch(state.ticker);
 });
 document.addEventListener("input", (event) => {
+  if (event.target.id === "company-filter") {
+    state.companyFilter = event.target.value;
+    $("#company-list").innerHTML = companyRows();
+  }
   if (event.target.id === "volume" || event.target.id === "price") {
     const volume = event.target.id === "volume";
     state.settings[volume ? "vol" : "px"] = Number(event.target.value);
@@ -378,3 +482,9 @@ setInterval(() => {
     load();
 }, 60000);
 load();
+
+setInterval(() => {
+  const el = $("#research-progress");
+  if (el && state.researchBusy)
+    el.textContent = `Reading sources · ${Math.floor((Date.now() - state.researchStarted) / 1000)} seconds elapsed. The first run may take a few minutes.`;
+}, 1000);

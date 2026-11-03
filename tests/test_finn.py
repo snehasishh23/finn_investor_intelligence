@@ -13,6 +13,8 @@ from finn import cache, documents, filings, llm, market, research
 def isolated_cache(tmp_path, monkeypatch):
     monkeypatch.setenv('FINN_CACHE_PATH', str(tmp_path / 'cache.db'))
     monkeypatch.delenv('GEMINI_API_KEY', raising=False)
+    monkeypatch.setenv('FAST_MODEL', 'test-fast')
+    monkeypatch.setenv('STRONG_MODEL', 'test-strong')
 
 
 @pytest.fixture
@@ -347,3 +349,28 @@ def test_model_quota_error_is_actionable(monkeypatch):
     monkeypatch.setattr(llm.requests,'post',lambda *a,**k:Response())
     with pytest.raises(ValueError,match='quota or rate limit'):
         llm.ask('quota test')
+
+
+def test_auto_model_selection_uses_current_text_models(monkeypatch):
+    monkeypatch.setenv('GEMINI_API_KEY','test-key')
+    monkeypatch.delenv('FAST_MODEL')
+    monkeypatch.delenv('STRONG_MODEL')
+    calls = []
+    class Response:
+        ok = True
+        def json(self):
+            return {'models':[{'name':'models/'+name,'supportedGenerationMethods':['generateContent']} for name in ['gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.8-flash','gemini-3.8-flash-tts','gemini-4-argon','gemini-3.8-flash-image']]}
+    def get(url,**kwargs):
+        assert 'test-key' not in url
+        calls.append(url)
+        return Response()
+    monkeypatch.setattr(llm.requests,'get',get)
+    assert llm.resolve_model('fast') == 'gemini-3.5-flash-lite'
+    assert llm.resolve_model('strong') == 'gemini-3.8-flash'
+    assert len(calls) == 1
+
+
+def test_explicit_model_override_is_preserved(monkeypatch):
+    monkeypatch.setenv('FAST_MODEL','custom-supported-model')
+    monkeypatch.setattr(llm.requests,'get',lambda *a,**k:pytest.fail('override must not list models'))
+    assert llm.resolve_model('fast') == 'custom-supported-model'

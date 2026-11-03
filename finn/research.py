@@ -89,6 +89,7 @@ def run(symbol):
     symbol = ticker(symbol)
     if not os.getenv('GEMINI_API_KEY'):
         raise ValueError('Set GEMINI_API_KEY on the server to enable live research. Demo research is available separately.')
+    model_ids = {'extraction': llm.resolve_model('fast'), 'synthesis': llm.resolve_model('strong')}
     max_chunks = max(1, min(12, int(os.getenv('FINN_RESEARCH_CHUNKS', '2' if os.getenv('VERCEL') else '12'))))
     logging.getLogger('finn').info('Research %s: discover primary sources', symbol)
     source_list = discover(symbol)
@@ -106,7 +107,7 @@ def run(symbol):
     if not documents:
         raise ValueError('Primary-source PDFs could not be read. Source hosts may block automated requests.')
     fingerprint = hashlib.sha256(json.dumps([(s['url'], d['hash']) for s, d in documents]).encode()).hexdigest()
-    key = f'research:v6:{max_chunks}:{symbol}:{fingerprint}:' + os.getenv('FAST_MODEL', 'gemini-2.5-flash') + ':' + os.getenv('STRONG_MODEL', 'gemini-2.5-pro')
+    key = f'research:v7:{max_chunks}:{symbol}:{fingerprint}:' + json.dumps(model_ids, sort_keys=True)
     cached = cache.get(key, 86400)
     if cached:
         return cached
@@ -142,6 +143,6 @@ For guidance compare only earlier forward guidance against later actual results 
     report = validate(llm.ask(prompt + '\n'.join(notes), 'strong', True), sources)
     from datetime import datetime, timezone
     report.update({'ticker': symbol, 'mode': 'live', 'sources': sources, 'warnings': warnings,
-                   'generated_at': datetime.now(timezone.utc).isoformat(),
+                   'generated_at': datetime.now(timezone.utc).isoformat(), 'models': model_ids,
                    'evidence_notice': 'Page links are validated; model interpretation still requires human review. Sampled documents may omit relevant context.'})
     return cache.put(key, report)
