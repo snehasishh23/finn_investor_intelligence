@@ -448,3 +448,19 @@ def test_parallel_documents_keep_request_deadline(monkeypatch):
     with budget.limit(120):
         report = research.run('TCS')
     assert [s['id'] for s in report['sources']] == ['S1','S2','S3']
+
+
+def test_synthesis_retries_invalid_citation_without_remapping(monkeypatch):
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-key')
+    monkeypatch.setattr(research, 'discover', lambda symbol: [{'id':'S1','kind':'Transcript','title':'Q2','url':'https://example.com/a.pdf'}])
+    monkeypatch.setattr(research, 'fetch_pdf', lambda url: {'pages':['Revenue 100'], 'hash':'hash'})
+    attempts = []
+    def ask(prompt,tier='fast',as_json=False):
+        if not as_json: return 'Revenue 100 [S1 p1]'
+        attempts.append(prompt)
+        return {'sections':[{'title':'Snapshot','claims':[{'text':'Revenue 100','citations':[{'source':'S1','page':99 if len(attempts)==1 else 1}]}]}]}
+    monkeypatch.setattr(llm, 'ask', ask)
+    result = research.run('TCS')
+    assert len(attempts) == 2
+    assert 'Do not invent or change page numbers' in attempts[1]
+    assert result['sections'][0]['claims'][0]['citations'][0]['page'] == 1
