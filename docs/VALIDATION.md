@@ -39,3 +39,7 @@ Screenshots of the illustrative demo (not live financial data):
 ## Not claimed
 
 No public deployment, email submission, live model accuracy evaluation, OCR validation or background push delivery was performed. Deployment configuration and a covering-note draft are included for the next step.
+
+## Vercel preparation checks
+
+Added tests for synchronous request-bound analysis on Vercel, `/tmp` cache selection, timeout handling and request-local budget reset. The suite now contains 26 passing tests. These tests validate runtime behavior with mocks; they do not claim a public Vercel deployment or live Gemini run.

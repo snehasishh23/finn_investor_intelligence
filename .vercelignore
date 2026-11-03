@@ -1,0 +1,12 @@
+.git
+.venv
+.env
+__pycache__
+.pytest_cache
+*.db
+*.db-*
+tests
+docs
+Dockerfile
+requirements-dev.txt
+requirements-lock.txt

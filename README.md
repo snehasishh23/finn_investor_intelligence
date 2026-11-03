@@ -80,6 +80,22 @@ Tests cover independent feed failures, demo isolation, cache concurrency, comple
 
 ## Deployment
 
+### Vercel (preferred)
+
+Import this GitHub repository into Vercel and use the FastAPI framework preset. The root `app.py`, `.python-version` and `vercel.json` configure the Python deployment. No frontend build command is needed. Add `GEMINI_API_KEY` in Vercel's environment-variable settings for live AI analysis, then redeploy. Demo mode works without a key. Do not paste keys into the repository or public client code.
+
+Vercel-specific behavior:
+
+- Analysis completes inside the HTTP request; it does not return a process-local background job ID.
+- The configured function duration is 300 seconds, with a request-local 260-second analysis budget. Slow sources can still exhaust that budget; retries reuse caches only when the same warm instance is available.
+- The cache defaults to `/tmp/finn/cache.db` and is ephemeral per instance. It is an optimization, not durable storage or shared state.
+- Research samples at most **2 text chunks per document** by default on Vercel to keep the initial demo practical. Coverage warnings remain visible. `FINN_RESEARCH_CHUNKS` can override this from 1 to 12; local/Render deployments default to 12.
+- Results extraction can rebuild exchange filing IDs on a cold instance. Source access can still fail if exchange hosts block the deployment region.
+
+See [Vercel deployment notes](docs/VERCEL.md). The [official FastAPI guide](https://vercel.com/docs/frameworks/backend/fastapi) documents entrypoint detection; the [Python runtime guide](https://vercel.com/docs/functions/runtimes/python) documents runtime and dependency selection.
+
+### Render / Docker
+
 `render.yaml` defines a Python web service; connect this repository in Render, supply `GEMINI_API_KEY` if you want live analysis, and deploy. Alternatively:
 
 ```bash
@@ -96,7 +112,7 @@ The Docker command reads `GEMINI_API_KEY` from your shell. Do not bake keys into
 - Management backgrounds are not invented. Live management notices link to the original filing and explicitly state that professional background has not been verified. External profile enrichment is left for a later iteration.
 - Scanned PDFs need OCR, which is not included. Fetches are limited to 25 MB / 600 pages. Document URLs must be public HTTPS and redirects are revalidated; production network isolation would provide stronger SSRF protection.
 - Only NSE symbols are supported; no BSE symbol mapping, portfolio editing, position sizing or investment recommendations.
-- Job state is process-local. Run a single Uvicorn worker; use Redis / a durable worker queue before horizontally scaling. Browser selections are device-local.
+- On local/Render deployments, job state is process-local. Run a single Uvicorn worker; use Redis / a durable worker queue before horizontally scaling. Vercel uses request-bound analysis instead. Browser selections are device-local.
 - This is a focused prototype; model claims and financial comparisons require review against the source.
 
 See [covering note](docs/COVERING_NOTE.md), [build history](docs/BUILD_HISTORY.md) and [validation](docs/VALIDATION.md).

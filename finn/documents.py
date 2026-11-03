@@ -7,7 +7,7 @@ import re
 from urllib.parse import urljoin, urlparse, parse_qs
 import pdfplumber
 import requests
-from . import cache
+from . import budget, cache
 
 HEADERS = {'User-Agent': 'Mozilla/5.0 (FINN research prototype)'}
 MAX_BYTES = 25 * 1024 * 1024
@@ -36,13 +36,14 @@ def fetch_pdf(url):
             url = 'https://www.bseindia.com/xml-data/corpfiling/AttachHis/' + name
     for _ in range(5):
         public_url(url)
-        with requests.get(url, headers=HEADERS, timeout=(10, 45), stream=True, allow_redirects=False) as response:
+        with requests.get(url, headers=HEADERS, timeout=(budget.timeout(10), budget.timeout(45)), stream=True, allow_redirects=False) as response:
             if response.is_redirect:
                 url = urljoin(url, response.headers['Location'])
                 continue
             response.raise_for_status()
             chunks, size = [], 0
             for chunk in response.iter_content(65536):
+                budget.timeout(45)
                 size += len(chunk)
                 if size > MAX_BYTES:
                     raise ValueError('Document exceeds 25 MB limit.')
@@ -53,7 +54,10 @@ def fetch_pdf(url):
         with pdfplumber.open(io.BytesIO(raw)) as pdf:
             if len(pdf.pages) > 600:
                 raise ValueError('Document exceeds 600 page limit.')
-            pages = [p.extract_text() or '' for p in pdf.pages]
+            pages = []
+            for page in pdf.pages:
+                budget.timeout(45)
+                pages.append(page.extract_text() or '')
         if not any(p.strip() for p in pages):
             raise ValueError('Scanned PDF has no extractable text; OCR is not included.')
         return cache.put(key, {'hash': hashlib.sha256(raw).hexdigest(), 'pages': pages, 'url': url})

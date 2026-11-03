@@ -12,7 +12,7 @@ import uuid
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from finn import filings, market, research
+from finn import budget, filings, market, research
 
 ROOT = Path(__file__).parent
 DEMO = json.loads((ROOT / 'finn/demo.json').read_text())
@@ -66,6 +66,17 @@ def data(hours: int = Query(24, ge=1, le=168), mode: Literal['demo', 'live'] = '
 
 
 def submit(key, function, *args):
+    # Serverless instances may freeze after a response and cannot share job memory.
+    # Complete analysis inside this request; the frontend already accepts a direct result.
+    if os.getenv('VERCEL'):
+        try:
+            with budget.limit(260):
+                return function(*args)
+        except (ValueError, TimeoutError) as error:
+            raise HTTPException(503, str(error))
+        except Exception:
+            log.exception('Serverless analysis failed')
+            raise HTTPException(503, 'Analysis source or provider unavailable. Please retry.')
     with lock:
         now = time.time()
         expired = [job_id for job_id, job in jobs.items() if job['future'].done() and now - job['created'] > 3600]
@@ -99,7 +110,15 @@ def start_research(symbol: str, mode: Literal['demo', 'live'] = 'demo'):
 @app.post('/api/filings/{filing_id}/results')
 def results(filing_id: str):
     from finn import cache
-    for row in cache.get('announcements:v3', 900) or []:
+    rows = cache.get('announcements:v3', 900)
+    if rows is None and os.getenv('VERCEL'):
+        # A different instance may receive this request; rebuild IDs from the exchange.
+        try:
+            filings.feed(168)
+            rows = cache.get('announcements:v3', 900)
+        except Exception:
+            raise HTTPException(503, 'Exchange source unavailable. Refresh and retry.')
+    for row in rows or []:
         if row.get('symbol') in market.PORTFOLIO:
             try:
                 item = filings.normalize(row)

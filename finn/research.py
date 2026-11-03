@@ -6,7 +6,7 @@ import re
 from urllib.parse import urljoin
 import requests
 from bs4 import BeautifulSoup
-from . import cache, llm
+from . import budget, cache, llm
 from .documents import HEADERS, chunks, fetch_pdf
 
 
@@ -19,10 +19,10 @@ def ticker(value):
 
 def discover(symbol):
     url = f'https://www.screener.in/company/{ticker(symbol)}/consolidated/'
-    response = requests.get(url, headers=HEADERS, timeout=25)
+    response = requests.get(url, headers=HEADERS, timeout=budget.timeout(25))
     if response.status_code == 404:
         url = f'https://www.screener.in/company/{symbol}/'
-        response = requests.get(url, headers=HEADERS, timeout=25)
+        response = requests.get(url, headers=HEADERS, timeout=budget.timeout(25))
     response.raise_for_status()
     soup = BeautifulSoup(response.text, 'html.parser')
     result = []
@@ -88,6 +88,7 @@ def run(symbol):
     symbol = ticker(symbol)
     if not os.getenv('GEMINI_API_KEY'):
         raise ValueError('Set GEMINI_API_KEY on the server to enable live research. Demo research is available separately.')
+    max_chunks = max(1, min(12, int(os.getenv('FINN_RESEARCH_CHUNKS', '2' if os.getenv('VERCEL') else '12'))))
     source_list = discover(symbol)
     if not source_list:
         raise ValueError('No annual report or transcript links found for this NSE ticker.')
@@ -102,25 +103,30 @@ def run(symbol):
     if not documents:
         raise ValueError('Primary-source PDFs could not be read. Source hosts may block automated requests.')
     fingerprint = hashlib.sha256(json.dumps([(s['url'], d['hash']) for s, d in documents]).encode()).hexdigest()
-    key = f'research:v4:{symbol}:{fingerprint}:' + os.getenv('FAST_MODEL', 'gemini-2.5-flash') + ':' + os.getenv('STRONG_MODEL', 'gemini-2.5-pro')
+    key = f'research:v5:{max_chunks}:{symbol}:{fingerprint}:' + os.getenv('FAST_MODEL', 'gemini-2.5-flash') + ':' + os.getenv('STRONG_MODEL', 'gemini-2.5-pro')
     cached = cache.get(key, 86400)
     if cached:
         return cached
     for source, document in documents:
         all_chunks = list(chunks(document, source['id']))
         # Deterministic evenly-spaced sampling keeps first-run cost bounded. Expose exact coverage.
-        indices = sorted({round(i * (len(all_chunks) - 1) / 11) for i in range(12)}) if len(all_chunks) > 12 else range(len(all_chunks))
+        indices = sorted({round(i * (len(all_chunks) - 1) / max(1, max_chunks - 1)) for i in range(max_chunks)}) if len(all_chunks) > max_chunks else range(len(all_chunks))
         selected = [all_chunks[i] for i in indices]
+        if budget.remaining() < 50:
+            warnings.append(f"{source['id']}: omitted to reserve time for synthesis.")
+            continue
         covered = sorted({int(n) for part in selected for n in re.findall(r'\[' + source['id'] + r' p(\d+)\]', part)})
-        sources.append({**source, 'hash': document['hash'], 'pages': len(document['pages']), 'covered_pages': covered, 'partial': len(all_chunks) > 12})
-        if len(all_chunks) > 12:
-            warnings.append(f"{source['id']}: sampled 12 of {len(all_chunks)} text chunks; research is partial.")
+        sources.append({**source, 'hash': document['hash'], 'pages': len(document['pages']), 'covered_pages': covered, 'partial': len(all_chunks) > max_chunks})
+        if len(all_chunks) > max_chunks:
+            warnings.append(f"{source['id']}: sampled {max_chunks} of {len(all_chunks)} text chunks; research is partial.")
         for part in selected:
             notes.append(llm.ask(
                 'Extract at most 12 factual observations from this primary document. Preserve units, fiscal periods, standalone/consolidated basis and exact source/page tags. '
                 'Prioritise business mix, revenue, EBITDA, PAT, ROCE, debt, operating cash flow, explicit forward guidance and actual delivered results. '
                 'Distinguish a target for a future period from a result for a completed period. No outside facts. No unsupported calculations.\n' + part,
                 'fast'))
+    if not notes:
+        raise TimeoutError('Sources took too long to read. Retry to reuse cached documents, or run locally for full research.')
     prompt = '''Using ONLY these extracted primary-source notes, return JSON:
 {"sections":[{"title":"Business snapshot / Financial snapshot / Trajectory / Balance sheet / Cash quality / Bull case / Bear case","claims":[{"text":"concise fact or clearly labelled inference","citations":[{"source":"S1","page":1}]}],"missing":"what is unavailable"}],
 "guidance":[{"period":"target period","promise":{"text":"explicit prior guidance, including date/period","citations":[{"source":"S2","page":2}]},"delivered":{"text":"actual matching period and metric","citations":[{"source":"S3","page":3}]},"status":"kept|missed|partial|unknown"}]}

@@ -5,8 +5,9 @@ Hello ENAM team,
 I built FINN, a responsive investor workspace around two workflows: a portfolio briefing that ranks material exchange filings and collapses routine disclosures, and on-demand company research that keeps the original document beside each claim.
 
 Repository: https://github.com/snehasishh23/finn_investor_intelligence
-Prototype: run locally using the README, or deploy the included Render configuration. A hosted URL still needs to be supplied after deployment.
-AI build history: docs/BUILD_HISTORY.md records the work performed in the coding-agent session. A full chat export/share link should be attached separately if available; that file is not a verbatim conversation export.
+Prototype URL: awaiting Vercel deployment verification. The repository includes Vercel, Render and Docker configuration.
+AI coding conversation: https://chatgpt.com/s/cx_6aea2fca403c81919c467804552777da
+Build summary and validation notes are included in the repository under docs/.
 
 Key decisions: rules handle filing classification and alerts at no model cost; a cheaper model extracts evidence and a stronger model synthesizes research. Caches include model identity and document content hashes. The interface distinguishes fictional demo content from live sources and preserves available data when an upstream service fails. Research citations identify both document and page, and missing guidance or financial figures remain explicitly unknown.
 
@@ -18,4 +19,4 @@ Best regards,
 Snehasish
 
 ---
-Draft only. No email has been sent. Add the deployed prototype URL and conversation export before submission.
+Draft only. No email has been sent. Replace the prototype URL line after Vercel deployment succeeds.

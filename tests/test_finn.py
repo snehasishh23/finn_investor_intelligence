@@ -238,3 +238,40 @@ def test_bse_viewer_link_resolves_to_pdf(monkeypatch):
     result = documents.fetch_pdf('https://www.bseindia.com/stockinfo/AnnPdfOpen.aspx?Pname=abc-123.pdf')
     assert fetched == ['https://www.bseindia.com/xml-data/corpfiling/AttachHis/abc-123.pdf']
     assert result['pages'] == ['Primary source text']
+
+
+def test_vercel_analysis_completes_in_request(client, monkeypatch):
+    monkeypatch.setenv('VERCEL', '1')
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-key')
+    monkeypatch.setattr(research, 'run', lambda symbol: {'ticker':symbol,'mode':'live'})
+    response = client.post('/api/research/TCS?mode=live')
+    assert response.status_code == 200
+    assert response.json() == {'ticker':'TCS','mode':'live'}
+    assert 'job_id' not in response.json()
+
+
+def test_vercel_cache_uses_writable_tmp(monkeypatch):
+    monkeypatch.setenv('VERCEL', '1')
+    monkeypatch.delenv('FINN_CACHE_PATH')
+    with cache.connection() as db:
+        path = db.execute('PRAGMA database_list').fetchone()[2]
+    assert path.endswith('/tmp/finn/cache.db')
+
+
+def test_analysis_budget_expires_and_resets():
+    from finn import budget
+    with budget.limit(-1):
+        with pytest.raises(TimeoutError):
+            budget.timeout(20)
+    assert budget.timeout(20) == 20
+
+
+def test_vercel_returns_actionable_analysis_failure(client, monkeypatch):
+    monkeypatch.setenv('VERCEL', '1')
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-key')
+    def fail(symbol):
+        raise TimeoutError('Time budget exhausted')
+    monkeypatch.setattr(research, 'run', fail)
+    response = client.post('/api/research/TCS?mode=live')
+    assert response.status_code == 503
+    assert response.json()['detail'] == 'Time budget exhausted'

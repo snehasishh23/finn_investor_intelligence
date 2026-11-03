@@ -32,3 +32,9 @@ The coding agent generated implementation and tests during this session. The app
 ## Review focus
 
 The most important next evaluation is whether cited claims are supported and guidance metrics / target periods are correctly matched. Reference validation alone does not prove either. Automated tests use mocked providers for repeatability; separate live discovery and data probes are recorded in VALIDATION.md.
+
+## Submission preparation
+
+The user requested deployment and submission preparation, then chose Vercel. Added explicit Vercel runtime configuration, request-bound analysis, a writable temporary cache and time budgets. These changes avoid relying on per-instance job IDs after a serverless response. The Vercel research budget samples two chunks per document with disclosed partial coverage.
+
+Created a shared coding-conversation snapshot: https://chatgpt.com/s/cx_6aea2fca403c81919c467804552777da. The snapshot predates this deployment-preparation section. Vercel account sign-in and a server-side Gemini key are still required before a successful public live-analysis deployment can be claimed.

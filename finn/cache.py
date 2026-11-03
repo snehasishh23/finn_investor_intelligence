@@ -9,7 +9,8 @@ from pathlib import Path
 
 @contextmanager
 def connection():
-    path = Path(os.getenv('FINN_CACHE_PATH', 'cache.db'))
+    default = '/tmp/finn/cache.db' if os.getenv('VERCEL') else 'cache.db'
+    path = Path(os.getenv('FINN_CACHE_PATH', default))
     path.parent.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(path, timeout=20)
     db.execute('CREATE TABLE IF NOT EXISTS kv(k TEXT PRIMARY KEY, v TEXT, ts REAL)')

@@ -3,7 +3,7 @@ import hashlib
 import json
 import os
 import requests
-from . import cache
+from . import budget, cache
 
 
 def ask(prompt, tier='fast', as_json=False):
@@ -24,7 +24,7 @@ def ask(prompt, tier='fast', as_json=False):
         body['generationConfig']['responseMimeType'] = 'application/json'
     response = requests.post(
         f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
-        headers={'x-goog-api-key': api_key}, json=body, timeout=120,
+        headers={'x-goog-api-key': api_key}, json=body, timeout=budget.timeout(120),
     )
     response.raise_for_status()
     candidate = response.json()['candidates'][0]
