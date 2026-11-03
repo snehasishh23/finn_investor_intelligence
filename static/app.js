@@ -243,7 +243,7 @@ function reportHTML(r) {
     body = r.sources.length
       ? `<section><h3>Open the evidence.</h3>${r.sources.map((s) => `<div class="source">${sourceLink(s.url, `${s.id} · ${s.kind} · ${s.title}`)}<div class="muted small">${s.covered_pages.length} of ${s.pages} pages represented in analysed chunks${s.partial ? " · Partial coverage" : ""}</div></div>`).join("")}<p class="muted small">${E(r.evidence_notice)}</p>${r.models ? `<p class="muted small">Extraction: ${E(r.models.extraction)} · Synthesis: ${E(r.models.synthesis)}</p>` : ""}</section>`
       : '<p class="muted">Illustrative demo. No primary documents were analysed.</p>';
-  return `<div class="report-heading"><div><div class="eyebrow">${E(r.ticker)} · NSE</div><h2>${E(companies[r.ticker] || r.ticker)}</h2></div><span class="evidence-badge">${r.mode === "demo" ? "ILLUSTRATIVE DEMO" : `${r.sources.length} PRIMARY DOCUMENTS`}</span></div>${r.mode === "demo" ? '<div class="notice">Fictional research example. Switch to Live for document analysis.</div>' : r.warnings.length ? `<details class="coverage-disclosure"><summary>Partial coverage · ${r.warnings.length} source notices</summary>${r.warnings.map((w) => `<p class="small muted">${E(w)}</p>`).join("")}</details>` : ""}<div class="research-tabs" role="tablist" aria-label="Research sections">${Object.entries(
+  return `<div class="report-heading"><div><div class="eyebrow">${E(r.ticker)} · NSE</div><h2>${E(companies[r.ticker] || r.ticker)}</h2></div><span class="evidence-badge">${r.mode === "demo" ? "ILLUSTRATIVE DEMO" : `${r.sources.length} PRIMARY DOCUMENTS`}</span></div>${r.mode === "live" && r.generated_at ? `<p class="small muted">Report generated ${E(new Date(r.generated_at).toLocaleString())} · reused for up to 1 hour.</p>` : ""}${r.mode === "demo" ? '<div class="notice">Fictional research example. Switch to Live for document analysis.</div>' : r.warnings.length ? `<details class="coverage-disclosure"><summary>Partial coverage · ${r.warnings.length} source notices</summary>${r.warnings.map((w) => `<p class="small muted">${E(w)}</p>`).join("")}</details>` : ""}<div class="research-tabs" role="tablist" aria-label="Research sections">${Object.entries(
     tabs,
   )
     .map(
@@ -355,6 +355,13 @@ async function runResearch(symbol) {
   state.researchStarted = Date.now();
   state.view = "research";
   state.researchError = "";
+  const reportKey = `finn-research-v2:${state.mode}:${state.ticker}`;
+  const cachedReport = stored(reportKey, null);
+  if (cachedReport && Date.now() - cachedReport.savedAt < 3600000) {
+    state.report = cachedReport.report;
+    render();
+    return;
+  }
   state.report = null;
   state.researchBusy = true;
   const token = ++state.researchToken;
@@ -366,7 +373,10 @@ async function runResearch(symbol) {
         { method: "POST" },
       ),
     );
-    if (token === state.researchToken) state.report = d;
+    if (token === state.researchToken) {
+      state.report = d;
+      try { localStorage.setItem(reportKey, JSON.stringify({savedAt: Date.now(), report: d})); } catch {}
+    }
   } catch (error) {
     if (token === state.researchToken) state.researchError = error.message;
   } finally {
@@ -486,5 +496,5 @@ load();
 setInterval(() => {
   const el = $("#research-progress");
   if (el && state.researchBusy)
-    el.textContent = `Reading sources · ${Math.floor((Date.now() - state.researchStarted) / 1000)} seconds elapsed. The first run may take a few minutes.`;
+    el.textContent = `Reading sources · ${Math.floor((Date.now() - state.researchStarted) / 1000)} seconds elapsed. First searches read original PDFs; repeat searches reuse the report.`;
 }, 1000);

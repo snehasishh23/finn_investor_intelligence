@@ -410,3 +410,41 @@ def test_transient_synthesis_failure_uses_disclosed_fallback(monkeypatch):
     assert 'gemini-3.5-flash-lite' in calls[1]
     llm.ask('fallback test','strong',True)
     assert len(calls)==2
+
+
+def test_recent_research_skips_source_discovery(monkeypatch):
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-key')
+    monkeypatch.setenv('VERCEL', '1')
+    monkeypatch.setenv('STRONG_MODEL', 'auto')
+    monkeypatch.setattr(llm, 'resolve_model', lambda tier='fast': 'fast-model' if tier == 'fast' else 'slow-model')
+    monkeypatch.setattr(research, 'discover', lambda symbol: [{'id':'S1','kind':'Transcript','title':'Q2','url':'https://example.com/a.pdf'}])
+    monkeypatch.setattr(research, 'fetch_pdf', lambda url: {'pages':['Evidence'], 'hash':'hash'})
+    calls = []
+    def ask(prompt, tier='fast', as_json=False):
+        calls.append((tier, as_json))
+        return {'sections':[{'title':'Snapshot','claims':[]}]} if as_json else 'Evidence [S1 p1]'
+    monkeypatch.setattr(llm, 'ask', ask)
+    monkeypatch.setattr(llm, 'model_used', lambda *args: 'fast-model')
+    report = research.run('TCS')
+    monkeypatch.setattr(research, 'discover', lambda symbol: pytest.fail('repeat search fetched sources'))
+    assert research.run('TCS') == report
+    assert calls == [('fast', False), ('fast', True)]
+    assert report['models']['synthesis'] == 'fast-model'
+
+
+def test_parallel_documents_keep_request_deadline(monkeypatch):
+    from threading import Barrier
+    from finn import budget
+    monkeypatch.setenv('GEMINI_API_KEY', 'test-key')
+    sources = [{'id':f'S{i}', 'kind':'Transcript', 'title':'Q2', 'url':f'https://example.com/{i}.pdf'} for i in range(1,4)]
+    monkeypatch.setattr(research, 'discover', lambda symbol: sources)
+    barrier = Barrier(3)
+    def fetch(url):
+        assert 0 < budget.remaining() <= 120
+        barrier.wait(timeout=5)  # Fails if downloads are accidentally sequential.
+        return {'pages':['Evidence'], 'hash':url}
+    monkeypatch.setattr(research, 'fetch_pdf', fetch)
+    monkeypatch.setattr(llm, 'ask', lambda prompt,tier='fast',as_json=False: {'sections':[{'title':'Snapshot','claims':[]}]} if as_json else 'Evidence')
+    with budget.limit(120):
+        report = research.run('TCS')
+    assert [s['id'] for s in report['sources']] == ['S1','S2','S3']

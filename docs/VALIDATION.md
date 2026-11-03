@@ -28,3 +28,7 @@ Production: https://finn-investor-intelligence-ashen.vercel.app
 - SQLite caches are ephemeral on Vercel. There is no authentication, OCR, verified management biography service, durable background ingestion or device push delivery.
 - Vercel Drop deployment is manual. GitHub pushes do not automatically redeploy this project.
 - No submission email has been sent.
+
+## Research latency improvement
+
+36 tests pass after adding one-hour report reuse before source discovery, parallel PDF downloads with inherited request deadlines, and fast hosted synthesis. Browser report reuse survives a page reload and serverless instance changes. Generation time and one-hour reuse are disclosed. Production latency is rechecked after rollout.

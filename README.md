@@ -29,7 +29,7 @@ export STRONG_MODEL=auto
 uvicorn app:app --reload
 ```
 
-Switch the header from **Demo** to **Live**. Market and announcement data require no model key. PDF research and results extraction require a key and consume provider quota. Model availability depends on your Google account; override the model IDs as needed. Auto selection queries the account’s supported model list. A single bounded fallback to an available lighter model handles transient model errors, with the actual model disclosed in Sources. Routing prefers: Flash-Lite for extraction and Flash for synthesis where available, with explicit model overrides supported. The [provider API reference](https://ai.google.dev/api/generate-content) documents the REST endpoint.
+Switch the header from **Demo** to **Live**. Market and announcement data require no model key. PDF research and results extraction require a key and consume provider quota. Model availability depends on your Google account; override the model IDs as needed. Auto selection queries the account’s supported model list. A single bounded fallback to an available lighter model handles transient model errors, with the actual model disclosed in Sources. Hosted research uses Flash-Lite for extraction and synthesis to reduce interactive latency; local research prefers Flash for synthesis. Explicit STRONG_MODEL overrides are respected. Up to three PDF downloads overlap. Completed reports are reused for one hour before rediscovery, with a browser cache surviving serverless cold starts and a visible generation timestamp. The [provider API reference](https://ai.google.dev/api/generate-content) documents the REST endpoint.
 
 ## A two-minute walkthrough
 
