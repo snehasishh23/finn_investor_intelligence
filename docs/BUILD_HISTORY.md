@@ -46,3 +46,5 @@ The user configured the Gemini key directly in Vercel. The health check confirme
 A subsequent live check returned a concrete Gemini HTTP 404 for the retired/default model ID. Replaced hard-coded model defaults with account-supported model discovery through Google's Models API; extraction prefers stable Flash-Lite and synthesis prefers stable Flash. Explicit administrator overrides remain supported. Model availability is checked before document ingestion and resolved IDs are included in the report cache key and Sources view.
 
 The user provided screenshots of a friend's research page as a layout reference. Added a searchable company picker and research tabs while retaining factual citations and explicit demo labels.
+
+Server logs narrowed the remaining failure to the final Gemini synthesis call rather than document ingestion. Bounded current-model thinking levels and report length, preserving citation validation. A mobile viewport check also exposed a grid minimum-width issue in the company picker; added a shrinking grid track and child constraints.

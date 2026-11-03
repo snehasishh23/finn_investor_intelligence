@@ -890,3 +890,6 @@ footer {
     font-size: 13px;
   }
 }
+.company-picker,.research-workspace{min-width:0}
+#company-list{min-width:0;max-width:100%}
+@media(max-width:800px){.research-workspace{grid-template-columns:minmax(0,1fr)}}

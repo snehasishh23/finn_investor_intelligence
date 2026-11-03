@@ -374,3 +374,19 @@ def test_explicit_model_override_is_preserved(monkeypatch):
     monkeypatch.setenv('FAST_MODEL','custom-supported-model')
     monkeypatch.setattr(llm.requests,'get',lambda *a,**k:pytest.fail('override must not list models'))
     assert llm.resolve_model('fast') == 'custom-supported-model'
+
+
+def test_current_model_synthesis_uses_bounded_thinking(monkeypatch):
+    monkeypatch.setenv('GEMINI_API_KEY','test-key')
+    monkeypatch.setenv('STRONG_MODEL','gemini-3.8-flash')
+    class Response:
+        ok = True
+        def json(self): return {'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'{"ok":true}'}]}}]}
+    def post(url,**kwargs):
+        config=kwargs['json']['generationConfig']
+        assert config['thinkingConfig'] == {'thinkingLevel':'LOW'}
+        assert config['maxOutputTokens'] == 4096
+        assert config['responseMimeType'] == 'application/json'
+        return Response()
+    monkeypatch.setattr(llm.requests,'post',post)
+    assert llm.ask('concise synthesis','strong',True) == {'ok':True}

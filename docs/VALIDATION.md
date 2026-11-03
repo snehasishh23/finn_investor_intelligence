@@ -61,3 +61,9 @@ Large PDFs on Vercel now extract at most 32 evenly spaced pages, retaining origi
 ## Model availability fix
 
 The optimized hosted request returned Gemini HTTP 404 in 2 seconds. The configured key was recognized, but the hard-coded model ID was unavailable. Added account-supported model discovery and tests for excluding image/audio variants, choosing current stable text models and preserving explicit overrides. The suite now has 32 passing tests. Live success must still be verified after deployment.
+
+## Synthesis latency and mobile layout
+
+With model discovery enabled, server logs confirmed successful document extraction followed by a 90-second timeout on the final synthesis call. Added supported low/minimal thinking controls for current Gemini models and a concise output budget. A regression test checks the structured synthesis request. The suite now has 33 tests.
+
+The production company picker, Saved filter and alert persistence were exercised in the browser. A phone-width check found horizontal overflow in the new company list; the grid and picker now explicitly allow shrinking to the viewport width.
