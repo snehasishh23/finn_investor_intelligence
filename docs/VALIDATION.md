@@ -31,4 +31,4 @@ Production: https://finn-investor-intelligence-ashen.vercel.app
 
 ## Research latency improvement
 
-36 tests pass after adding one-hour report reuse before source discovery, parallel PDF downloads with inherited request deadlines, and fast hosted synthesis. Browser report reuse survives a page reload and serverless instance changes. Generation time and one-hour reuse are disclosed. Production latency is rechecked after rollout.
+37 tests pass after adding one-hour report reuse before source discovery, parallel PDF downloads with inherited request deadlines, and fast hosted synthesis. Browser report reuse survives a page reload and serverless instance changes. Generation time and one-hour reuse are disclosed. Production TCS verification on deployment b385b29 returned HTTP 200 in 34.39 seconds for a fresh search (four primary documents, seven sections), followed by 0.85 seconds for the same report on a warm instance. A one-time synthesis correction retries invalid citation output without silently changing page numbers. Browser cache logic checks passed for repeat reuse, mode isolation and one-hour expiry.
