@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#173f35" />
+    <title>FINN · Investor intelligence</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="FINN home"
+        >finn<span>INVESTOR INTELLIGENCE</span></a
+      >
+      <div class="head-right">
+        <span id="today"></span
+        ><label class="mode-label"
+          >Data
+          <select id="mode" aria-label="Data mode">
+            <option value="demo">Demo</option>
+            <option value="live">Live</option>
+          </select></label
+        >
+      </div>
+    </header>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="workspace-label">YOUR WORKSPACE</div>
+        <nav aria-label="Main navigation">
+          <button data-view="digest" class="active">
+            <span>◫</span> Briefing</button
+          ><button data-view="alerts">
+            <span>◉</span> Signals <b id="alert-count">0</b></button
+          ><button data-view="research"><span>⌕</span> Research</button>
+        </nav>
+        <div class="side-note">
+          <span class="status-dot"></span> Less noise.<br /><strong
+            >More conviction.</strong
+          >
+          <p>16 holdings. One place to see what deserves a closer look.</p>
+        </div>
+        <div class="side-bottom">
+          PRIMARY SOURCES FIRST<br /><span>Built for the daily investor.</span>
+        </div>
+      </aside>
+      <main>
+        <div id="notice" role="status"></div>
+        <div id="content"></div>
+      </main>
+      <aside class="holdings">
+        <div class="holdings-title">YOUR PORTFOLIO <span>16</span></div>
+        <p class="muted small">Daily close · tap to research</p>
+        <div id="holdings-list"></div>
+        <p class="muted small" id="coverage"></p>
+      </aside>
+    </div>
+    <footer>
+      FINN is a research prototype. Verify model interpretations against
+      original documents.
+    </footer>
+  </body>
+</html>

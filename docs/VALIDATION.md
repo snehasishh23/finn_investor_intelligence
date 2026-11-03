@@ -1,0 +1,41 @@
+# Validation record
+
+Checked on 4 November 2026 (Asia/Kolkata).
+
+## Automated
+
+- `python -m pytest -q`: **22 passed**. The local environment is Python 3.14. CI targets Python 3.12. Tests isolate the cache and mock external model calls.
+- `node --check static/app.js`: passed.
+- `git diff --check`: passed.
+- A Starlette test-client deprecation warning is emitted by the installed framework version; the suite passes.
+
+## Live probes
+
+These are point-in-time integration observations, not uptime guarantees or test fixtures:
+
+- Screener TCS discovery returned an annual-report link and four transcript links. Some transcript metadata may repeat a month; matching periods must come from document contents, not link labels.
+- A TCS investor-relations transcript PDF was downloaded and text extracted: **29 pages, 54,146 characters**.
+- Yahoo returned **2 / 2** requested EOD quotes for TCS and INFY. The latest returned session was 2 November 2026; the app displays session dates and does not call these intraday prices.
+- NSE returned **68** portfolio announcement items within the selected seven-day window.
+- **No live Gemini synthesis or financial extraction was executed:** no API key was provided. Tests validate the research orchestration and output checks with deterministic mocked model responses. Model accuracy, provider quota and end-to-end live analysis remain to be verified with a configured account.
+
+## Browser checks
+
+The local server was exercised through the browser at mobile (390 × 844) and desktop (1280 × 900) viewport sizes.
+
+- Briefing renders without credentials, including distinct demo notice and collapsed routine items.
+- Saving a filing and selecting Saved reduces the displayed filings to that item.
+- Signal controls render; changing the volume threshold to 2.1× survives a reload.
+- TCS demo research renders business and financial snapshots, guidance comparisons and a fiction notice.
+- The desktop layout includes the portfolio sidebar. The document's horizontal content width matches the viewport width at the desktop breakpoint.
+- Mobile navigation remains fixed at the bottom. Desktop navigation sits in the left sidebar.
+
+Screenshots of the illustrative demo (not live financial data):
+
+![Mobile briefing](images/mobile.jpg)
+
+![Desktop briefing](images/desktop.jpg)
+
+## Not claimed
+
+No public deployment, email submission, live model accuracy evaluation, OCR validation or background push delivery was performed. Deployment configuration and a covering-note draft are included for the next step.

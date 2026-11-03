@@ -1,0 +1,441 @@
+{
+  "P": [
+    {
+      "t": "RELIANCE",
+      "px": 1428,
+      "ch": 1.2,
+      "vol": 1.1
+    },
+    {
+      "t": "TCS",
+      "px": 3910,
+      "ch": -0.8,
+      "vol": 1.4
+    },
+    {
+      "t": "HDFCBANK",
+      "px": 1012,
+      "ch": 0.4,
+      "vol": 0.9
+    },
+    {
+      "t": "INFY",
+      "px": 1655,
+      "ch": 3.9,
+      "vol": 2.6
+    },
+    {
+      "t": "ICICIBANK",
+      "px": 1390,
+      "ch": 0.2,
+      "vol": 1
+    },
+    {
+      "t": "SUNPHARMA",
+      "px": 1710,
+      "ch": -1.1,
+      "vol": 1.2
+    },
+    {
+      "t": "TATAMOTORS",
+      "px": 702,
+      "ch": -4.6,
+      "vol": 2.3
+    },
+    {
+      "t": "ITC",
+      "px": 412,
+      "ch": 0.1,
+      "vol": 0.8
+    },
+    {
+      "t": "LT",
+      "px": 3720,
+      "ch": 0.9,
+      "vol": 1.3
+    },
+    {
+      "t": "BHARTIARTL",
+      "px": 1960,
+      "ch": 0.5,
+      "vol": 1
+    },
+    {
+      "t": "ASIANPAINT",
+      "px": 2390,
+      "ch": -0.3,
+      "vol": 0.7
+    },
+    {
+      "t": "TITAN",
+      "px": 3480,
+      "ch": 2.2,
+      "vol": 1.6
+    },
+    {
+      "t": "DIXON",
+      "px": 16850,
+      "ch": 5.4,
+      "vol": 3.1
+    },
+    {
+      "t": "ETERNAL",
+      "px": 298,
+      "ch": -1.9,
+      "vol": 1.9
+    },
+    {
+      "t": "KPITTECH",
+      "px": 1310,
+      "ch": -2.8,
+      "vol": 2.2
+    },
+    {
+      "t": "PERSISTENT",
+      "px": 5920,
+      "ch": 1.7,
+      "vol": 1.5
+    }
+  ],
+  "A": [
+    {
+      "t": "INFY",
+      "c": "results",
+      "h": 5,
+      "p": 3,
+      "title": "Q2 FY27 results",
+      "sum": "Revenue up on large-deal ramp; margin held.",
+      "res": [
+        [
+          "Revenue",
+          41200,
+          40100,
+          37900
+        ],
+        [
+          "EBITDA",
+          9150,
+          8900,
+          8300
+        ],
+        [
+          "PBT",
+          8200,
+          7900,
+          7400
+        ],
+        [
+          "PAT",
+          6200,
+          5950,
+          5500
+        ]
+      ]
+    },
+    {
+      "t": "TCS",
+      "c": "results",
+      "h": 20,
+      "p": 3,
+      "title": "Q2 FY27 results",
+      "sum": "Flat revenue QoQ; PAT up on lower tax.",
+      "res": [
+        [
+          "Revenue",
+          66000,
+          65100,
+          63500
+        ],
+        [
+          "EBITDA",
+          16300,
+          16000,
+          15500
+        ],
+        [
+          "PBT",
+          15100,
+          14900,
+          14000
+        ],
+        [
+          "PAT",
+          11500,
+          11000,
+          10600
+        ]
+      ]
+    },
+    {
+      "t": "KPITTECH",
+      "c": "mgmt",
+      "h": 9,
+      "p": 3,
+      "title": "CFO resignation; new CFO appointed",
+      "sum": "Effective in 60 days. Search for incoming CFO concluded.",
+      "bio": [
+        "A. Mehta (sample)",
+        "Fictional biography: a chartered accountant with prior finance and investor-relations experience. No professional profile was fetched."
+      ]
+    },
+    {
+      "t": "TATAMOTORS",
+      "c": "lit",
+      "h": 11,
+      "p": 3,
+      "title": "Regulatory notice on emissions compliance",
+      "sum": "Show-cause notice; company says no material impact expected."
+    },
+    {
+      "t": "DIXON",
+      "c": "capex",
+      "h": 14,
+      "p": 3,
+      "title": "Board approves new plant for \u20b91,200 Cr",
+      "sum": "Capacity adds for components; commissioning guided in 18 months."
+    },
+    {
+      "t": "SUNPHARMA",
+      "c": "rating",
+      "h": 18,
+      "p": 2,
+      "title": "Rating reaffirmed AAA (stable)",
+      "sum": "No change."
+    },
+    {
+      "t": "ITC",
+      "c": "div",
+      "h": 30,
+      "p": 2,
+      "title": "Interim dividend \u20b97.50, record date 5 Nov",
+      "sum": "Fictional cash payout example. Verify ex-date and record date in an actual exchange notice."
+    },
+    {
+      "t": "RELIANCE",
+      "c": "pr",
+      "h": 40,
+      "p": 2,
+      "title": "Clarification on media report",
+      "sum": "Company says it has no pending deal beyond disclosed ones."
+    },
+    {
+      "t": "HDFCBANK",
+      "c": "ins",
+      "h": 52,
+      "p": 2,
+      "title": "Promoter-group trade disclosure",
+      "sum": "Small open-market purchase by a related entity."
+    },
+    {
+      "t": "LT",
+      "c": "routine",
+      "h": 3,
+      "p": 1,
+      "title": "ESOP allotment"
+    },
+    {
+      "t": "TITAN",
+      "c": "routine",
+      "h": 6,
+      "p": 1,
+      "title": "Compliance certificate"
+    },
+    {
+      "t": "ICICIBANK",
+      "c": "routine",
+      "h": 8,
+      "p": 1,
+      "title": "Auditor intimation"
+    },
+    {
+      "t": "PERSISTENT",
+      "c": "routine",
+      "h": 22,
+      "p": 1,
+      "title": "Analyst meet schedule"
+    },
+    {
+      "t": "BHARTIARTL",
+      "c": "routine",
+      "h": 60,
+      "p": 1,
+      "title": "Newspaper ad for results"
+    },
+    {
+      "t": "ASIANPAINT",
+      "c": "routine",
+      "h": 100,
+      "p": 1,
+      "title": "ESG report"
+    }
+  ],
+  "R": {
+    "TCS": {
+      "biz": "IT services across BFSI, retail, manufacturing; revenue by geography led by North America.",
+      "fin": [
+        [
+          "Revenue (TTM)",
+          "\u20b92.6L Cr"
+        ],
+        [
+          "EBITDA margin",
+          "24.6%"
+        ],
+        [
+          "PAT margin",
+          "17.4%"
+        ],
+        [
+          "ROCE",
+          "58%"
+        ]
+      ],
+      "traj": "Revenue growth slowed from double digits to low single digits over three years; margin broadly flat.",
+      "bal": "Net-cash; no debt. Receivable days stable near 80.",
+      "cash": "Cash from operations \u2248 100% of PAT in each of the last 3 years.",
+      "pvd": [
+        [
+          "Q3 FY26",
+          "Return to mid-single-digit growth",
+          "1.1% YoY (cc)",
+          "miss"
+        ],
+        [
+          "Q4 FY26",
+          "Margin in 26\u201328% band",
+          "25.2%",
+          "miss"
+        ],
+        [
+          "Q1 FY27",
+          "Deal TCV above $9B",
+          "$9.4B",
+          "kept"
+        ],
+        [
+          "Q2 FY27",
+          "Sequential growth pickup",
+          "1.4% QoQ",
+          "part"
+        ]
+      ],
+      "bull": "Cash-rich, high returns, large-deal pipeline.",
+      "bear": "Growth guidance missed three of four quarters; margin band unmet.",
+      "src": ""
+    },
+    "DIXON": {
+      "biz": "Electronics manufacturing services: mobiles, home appliances, lighting; mobile is the bulk of revenue.",
+      "fin": [
+        [
+          "Revenue (TTM)",
+          "\u20b938,000 Cr"
+        ],
+        [
+          "EBITDA margin",
+          "4.1%"
+        ],
+        [
+          "PAT margin",
+          "2.5%"
+        ],
+        [
+          "ROCE",
+          "31%"
+        ]
+      ],
+      "traj": "Revenue compounding fast; margin thin and stable.",
+      "bal": "Low debt; working capital cycle lengthening with scale.",
+      "cash": "Operating cash flow below PAT in two of last three years.",
+      "pvd": [
+        [
+          "Q3 FY26",
+          "Mobile volumes +30%",
+          "+34%",
+          "kept"
+        ],
+        [
+          "Q4 FY26",
+          "EBITDA margin 4.5%",
+          "4.0%",
+          "miss"
+        ],
+        [
+          "Q1 FY27",
+          "Backward integration ramp",
+          "Delayed one quarter",
+          "part"
+        ],
+        [
+          "Q2 FY27",
+          "Revenue \u20b99,500 Cr",
+          "\u20b99,800 Cr",
+          "kept"
+        ]
+      ],
+      "bull": "Scale and component localisation widen moat.",
+      "bear": "Thin margin, cash conversion weak, customer concentration.",
+      "src": ""
+    },
+    "INFY": {
+      "biz": "Fictional example: technology consulting and services, with North America the largest market.",
+      "fin": [
+        [
+          "Quarterly revenue",
+          "\u20b941,200 Cr"
+        ],
+        [
+          "EBITDA",
+          "\u20b99,150 Cr"
+        ],
+        [
+          "PAT",
+          "\u20b96,200 Cr"
+        ],
+        [
+          "Period",
+          "Illustrative Q2 FY27"
+        ]
+      ],
+      "traj": "Fictional example: sequential growth improves as large contracts ramp.",
+      "bal": "Fictional example: a net-cash balance sheet supports payouts.",
+      "cash": "Fictional example: receivable growth is a cash-conversion risk to investigate.",
+      "pvd": [
+        [
+          "Q2 FY27",
+          "Sequential revenue growth above 2%",
+          "2.74% QoQ",
+          "kept"
+        ]
+      ],
+      "bull": "Illustrative thesis: new contracts could support a recovery.",
+      "bear": "Illustrative risk: client spending delays could slow the ramp."
+    },
+    "HDFCBANK": {
+      "biz": "Fictional example: retail and corporate banking, deposits and lending.",
+      "fin": [
+        [
+          "Net interest income",
+          "\u20b932,000 Cr"
+        ],
+        [
+          "PAT",
+          "\u20b918,000 Cr"
+        ],
+        [
+          "ROA",
+          "1.8%"
+        ],
+        [
+          "Period",
+          "Illustrative Q2 FY27"
+        ]
+      ],
+      "traj": "Fictional example: deposit growth catches up with loan growth.",
+      "bal": "Fictional example: the loan-to-deposit ratio is the key funding measure to track.",
+      "cash": "Bank cash flows need a sector-specific interpretation; generic CFO/PAT comparisons can mislead.",
+      "pvd": [],
+      "bull": "Illustrative thesis: stronger deposits reduce pressure on funding costs.",
+      "bear": "Illustrative risk: deposit competition and credit costs could pressure returns."
+    }
+  }
+}
