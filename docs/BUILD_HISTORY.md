@@ -38,3 +38,5 @@ The most important next evaluation is whether cited claims are supported and gui
 The user requested deployment and submission preparation, then chose Vercel. Added explicit Vercel runtime configuration, request-bound analysis, a writable temporary cache and time budgets. These changes avoid relying on per-instance job IDs after a serverless response. The Vercel research budget samples two chunks per document with disclosed partial coverage.
 
 Created a shared coding-conversation snapshot: https://chatgpt.com/s/cx_6aea2fca403c81919c467804552777da. The snapshot predates this deployment-preparation section. Vercel account sign-in and a server-side Gemini key are still required before a successful public live-analysis deployment can be claimed.
+
+Vercel deployment succeeded at https://finn-investor-intelligence-ashen.vercel.app. Anonymous endpoint tests passed. The hosted region returned Yahoo quotes but was blocked by NSE, so the original captured public NSE response was packaged as a dated fallback with a seven-day expiry and explicit UI disclosure. No fictional events are inserted into Live mode. The submission draft was prepared in Gmail; it has not been sent.

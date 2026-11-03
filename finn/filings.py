@@ -3,12 +3,26 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import hashlib
 import math
+import json
+from pathlib import Path
 import requests
 from . import cache, llm
 from .documents import fetch_pdf
 from .market import PORTFOLIO
 
 H = {'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-US,en;q=0.9', 'Referer': 'https://www.nseindia.com/'}
+SNAPSHOT = Path(__file__).with_name('filings_snapshot.json')
+
+
+def captured_rows():
+    packet = json.loads(SNAPSHOT.read_text())
+    captured = datetime.fromisoformat(packet['captured_at'])
+    age = datetime.now(ZoneInfo('Asia/Kolkata')) - captured
+    if age.total_seconds() < 0 or age.total_seconds() > 7 * 86400:
+        raise ValueError('Captured exchange snapshot is outside its seven-day lifetime.')
+    return packet['rows'], packet['captured_at']
+
+
 RULES = [
     ('routine', 1, ['newspaper', 'trading window', 'analyst meet', 'compliance certificate']),
     ('mgmt', 3, ['resign', 'appointment of', 'cessation', 'key managerial', 'chief financial', 'chief executive']),
@@ -45,16 +59,20 @@ def normalize(row, now=None):
 def feed(hours=24):
     rows = cache.get('announcements:v3', 900)
     if rows is None:
-        with requests.Session() as session:
-            session.headers.update(H)
-            session.get('https://www.nseindia.com', timeout=12).raise_for_status()
-            response = session.get('https://www.nseindia.com/api/corporate-announcements',
-                                   params={'index': 'equities', 'from_date': (datetime.now(ZoneInfo('Asia/Kolkata')) - timedelta(days=7)).strftime('%d-%m-%Y'), 'to_date': datetime.now(ZoneInfo('Asia/Kolkata')).strftime('%d-%m-%Y')}, timeout=25)
-            response.raise_for_status()
-            rows = response.json()
-        if not isinstance(rows, list):
-            raise ValueError('Unexpected NSE response.')
-        # Cache the exchange response, including announcements outside the portfolio.
+        try:
+            with requests.Session() as session:
+                session.headers.update(H)
+                session.get('https://www.nseindia.com', timeout=12).raise_for_status()
+                response = session.get('https://www.nseindia.com/api/corporate-announcements',
+                                       params={'index': 'equities', 'from_date': (datetime.now(ZoneInfo('Asia/Kolkata')) - timedelta(days=7)).strftime('%d-%m-%Y'), 'to_date': datetime.now(ZoneInfo('Asia/Kolkata')).strftime('%d-%m-%Y')}, timeout=25)
+                response.raise_for_status()
+                rows = response.json()
+            if not isinstance(rows, list):
+                raise ValueError('Unexpected NSE response.')
+            cache.put('announcements:status', {'source': 'live'})
+        except (requests.RequestException, ValueError):
+            rows, captured_at = captured_rows()
+            cache.put('announcements:status', {'source': 'snapshot', 'captured_at': captured_at})
         cache.put('announcements:v3', rows)
     out, seen = [], set()
     for row in rows:

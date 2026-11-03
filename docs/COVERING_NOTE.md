@@ -5,7 +5,8 @@ Hello ENAM team,
 I built FINN, a responsive investor workspace around two workflows: a portfolio briefing that ranks material exchange filings and collapses routine disclosures, and on-demand company research that keeps the original document beside each claim.
 
 Repository: https://github.com/snehasishh23/finn_investor_intelligence
-Prototype URL: awaiting Vercel deployment verification. The repository includes Vercel, Render and Docker configuration.
+Prototype: https://finn-investor-intelligence-ashen.vercel.app
+The repository includes Vercel, Render and Docker configuration.
 AI coding conversation: https://chatgpt.com/s/cx_6aea2fca403c81919c467804552777da
 Build summary and validation notes are included in the repository under docs/.
 
@@ -19,4 +20,4 @@ Best regards,
 Snehasish
 
 ---
-Draft only. No email has been sent. Replace the prototype URL line after Vercel deployment succeeds.
+Draft only. No email has been sent. Live Gemini analysis still requires a server-side API key. NSE blocks requests from the Vercel region; an explicitly dated captured exchange snapshot supports the filing demonstration when the live source is unavailable.

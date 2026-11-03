@@ -43,3 +43,11 @@ No public deployment, email submission, live model accuracy evaluation, OCR vali
 ## Vercel preparation checks
 
 Added tests for synchronous request-bound analysis on Vercel, `/tmp` cache selection, timeout handling and request-local budget reset. The suite now contains 26 passing tests. These tests validate runtime behavior with mocks; they do not claim a public Vercel deployment or live Gemini run.
+
+## Public Vercel deployment
+
+Production URL: https://finn-investor-intelligence-ashen.vercel.app
+
+Anonymous HTTP checks returned 200 for the homepage, CSS, JavaScript, health endpoint, demo data and TCS demo research. The initial hosted live probe returned 15 portfolio quotes. NSE blocked the deployment region, so a real captured exchange snapshot (68 portfolio records) was added as a clearly dated, seven-day fallback. It preserves original timestamps and filing URLs; the UI explicitly says it is not a current live feed. Two tests cover this fallback and expiry, bringing the suite to 28 tests.
+
+The project was deployed through Vercel Drop after the user signed in and completed Vercel's email verification. The GitHub source remains the canonical repository; pushes do not automatically redeploy this Drop project until Git integration is connected.

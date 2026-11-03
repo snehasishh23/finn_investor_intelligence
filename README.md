@@ -2,7 +2,9 @@
 
 A mobile-first investor workspace for the ENAM AI Engineer Build Challenge. It puts a ranked portfolio briefing, configurable signals and document-grounded research in one place.
 
-**Runs immediately without API keys.** Demo mode is explicitly fictional. Live failures never turn into sample prices or sample research.
+**[Open the deployed prototype](https://finn-investor-intelligence-ashen.vercel.app).**
+
+**Runs immediately without API keys.** Demo mode is explicitly fictional. Live failures never turn into fictional sample prices or sample research. If NSE is blocked, filings can use a clearly labelled real exchange snapshot for at most seven days after capture.
 
 ## Run locally
 
@@ -108,7 +110,7 @@ The Docker command reads `GEMINI_API_KEY` from your shell. Do not bake keys into
 ## Deliberate limits
 
 - Signals refresh in-app every 60 seconds while the page is open and visible. There is no background scheduler, Web Push, email or intraday market feed.
-- NSE / Yahoo / Screener and PDF hosts may rate-limit or block automated clients. Empty exchange responses are not proof that no filing exists. The UI shows source warnings and quote coverage.
+- NSE / Yahoo / Screener and PDF hosts may rate-limit or block automated clients. NSE currently blocks the Vercel deployment region. A captured public exchange response is included as a dated fallback, with original filing links and recalculated event ages; it expires seven days after capture and is always disclosed in live-mode warnings. Empty exchange responses are not proof that no filing exists. The UI shows source warnings and quote coverage.
 - Management backgrounds are not invented. Live management notices link to the original filing and explicitly state that professional background has not been verified. External profile enrichment is left for a later iteration.
 - Scanned PDFs need OCR, which is not included. Fetches are limited to 25 MB / 600 pages. Document URLs must be public HTTPS and redirects are revalidated; production network isolation would provide stronger SSRF protection.
 - Only NSE symbols are supported; no BSE symbol mapping, portfolio editing, position sizing or investment recommendations.

@@ -275,3 +275,34 @@ def test_vercel_returns_actionable_analysis_failure(client, monkeypatch):
     response = client.post('/api/research/TCS?mode=live')
     assert response.status_code == 503
     assert response.json()['detail'] == 'Time budget exhausted'
+
+
+def test_blocked_exchange_uses_disclosed_real_snapshot(client, monkeypatch, tmp_path):
+    import json
+    now = datetime.now(ZoneInfo('Asia/Kolkata'))
+    row = {'symbol':'TCS','an_dt':now.strftime('%d-%b-%Y %H:%M:%S'),'desc':'Financial results','attchmntFile':'https://example.com/filing.pdf'}
+    path = tmp_path / 'snapshot.json'
+    path.write_text(json.dumps({'captured_at':now.isoformat(),'rows':[row]}))
+    monkeypatch.setattr(filings, 'SNAPSHOT', path)
+    class Session:
+        def __enter__(self): return self
+        def __exit__(self,*args): pass
+        headers = {}
+        def get(self,*args,**kwargs):
+            import requests
+            raise requests.HTTPError('blocked')
+    monkeypatch.setattr(filings.requests,'Session',Session)
+    monkeypatch.setattr(market,'eod',lambda:[])
+    result = client.get('/api/data?mode=live').json()
+    assert result['A'][0]['t'] == 'TCS'
+    assert result['filings_source']['source'] == 'snapshot'
+    assert any('not a current live feed' in w for w in result['warnings'])
+
+
+def test_expired_exchange_snapshot_is_rejected(monkeypatch,tmp_path):
+    import json
+    path = tmp_path / 'snapshot.json'
+    path.write_text(json.dumps({'captured_at':'2020-01-01T00:00:00+00:00','rows':[]}))
+    monkeypatch.setattr(filings,'SNAPSHOT',path)
+    with pytest.raises(ValueError,match='seven-day'):
+        filings.captured_rows()

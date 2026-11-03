@@ -28,3 +28,9 @@ Do not use a long-lived local database path on Vercel. The default cache path is
 Deployment is not considered complete until the production URL has been tested. A domain has not been guessed or inserted as if it already exists.
 
 Official references: [FastAPI](https://vercel.com/docs/frameworks/backend/fastapi), [Python runtime](https://vercel.com/docs/functions/runtimes/python), [function duration](https://vercel.com/docs/functions/configuring-functions/duration).
+
+## Current deployment
+
+https://finn-investor-intelligence-ashen.vercel.app
+
+Deployed through Vercel Drop to the existing Hobby account. There is no Git integration, so GitHub pushes do not yet trigger deployments. New versions can be uploaded from the project's Vercel dashboard. The source repository remains https://github.com/snehasishh23/finn_investor_intelligence.

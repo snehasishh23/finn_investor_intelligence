@@ -12,7 +12,7 @@ import uuid
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from finn import budget, filings, market, research
+from finn import budget, cache, filings, market, research
 
 ROOT = Path(__file__).parent
 DEMO = json.loads((ROOT / 'finn/demo.json').read_text())
@@ -61,6 +61,10 @@ def data(hours: int = Query(24, ge=1, le=168), mode: Literal['demo', 'live'] = '
         except Exception:
             log.exception('%s feed failed', name)
             result['warnings'].append(f'{name.title()} source unavailable. Retry later; no sample data has been substituted.')
+    provenance = cache.get('announcements:status', 900) or {'source': 'unavailable'}
+    result['filings_source'] = provenance
+    if provenance.get('source') == 'snapshot':
+        result['warnings'].append(f"NSE is unavailable from this host. Filings use a captured exchange snapshot from {provenance['captured_at']}; this is not a current live feed.")
     result['coverage'] = {'portfolio': len(market.PORTFOLIO), 'quotes': len(result['P'])}
     return result
 
