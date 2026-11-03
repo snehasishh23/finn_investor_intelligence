@@ -390,3 +390,23 @@ def test_current_model_synthesis_uses_bounded_thinking(monkeypatch):
         return Response()
     monkeypatch.setattr(llm.requests,'post',post)
     assert llm.ask('concise synthesis','strong',True) == {'ok':True}
+
+
+def test_transient_synthesis_failure_uses_disclosed_fallback(monkeypatch):
+    monkeypatch.setenv('GEMINI_API_KEY','test-key')
+    monkeypatch.setenv('STRONG_MODEL','auto')
+    monkeypatch.setattr(llm,'resolve_model',lambda tier='fast':'gemini-3.5-flash-lite' if tier=='fast' else 'gemini-3.8-flash')
+    calls = []
+    class Response:
+        def __init__(self,ok,status): self.ok,self.status_code=ok,status
+        def json(self): return {'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'{"ok":true}'}]}}]}
+    def post(url,**kwargs):
+        calls.append(url)
+        return Response(False,503) if len(calls)==1 else Response(True,200)
+    monkeypatch.setattr(llm.requests,'post',post)
+    assert llm.ask('fallback test','strong',True) == {'ok':True}
+    assert llm.model_used('fallback test','strong',True) == 'gemini-3.5-flash-lite'
+    assert len(calls)==2
+    assert 'gemini-3.5-flash-lite' in calls[1]
+    llm.ask('fallback test','strong',True)
+    assert len(calls)==2

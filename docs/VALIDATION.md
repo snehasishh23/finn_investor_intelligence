@@ -67,3 +67,7 @@ The optimized hosted request returned Gemini HTTP 404 in 2 seconds. The configur
 With model discovery enabled, server logs confirmed successful document extraction followed by a 90-second timeout on the final synthesis call. Added supported low/minimal thinking controls for current Gemini models and a concise output budget. A regression test checks the structured synthesis request. The suite now has 33 tests.
 
 The production company picker, Saved filter and alert persistence were exercised in the browser. A phone-width check found horizontal overflow in the new company list; the grid and picker now explicitly allow shrinking to the viewport width.
+
+## Transient-provider fallback
+
+The next live request returned a provider HTTP 503. Added a deterministic test proving that managed synthesis can retry an available Flash-Lite model, return the response, preserve the actual model ID and reuse the cached result without duplicate calls. The suite has 34 passing tests. The provider-backed workflow remains under verification until a cited report is returned.

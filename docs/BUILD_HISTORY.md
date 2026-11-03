@@ -48,3 +48,5 @@ A subsequent live check returned a concrete Gemini HTTP 404 for the retired/defa
 The user provided screenshots of a friend's research page as a layout reference. Added a searchable company picker and research tabs while retaining factual citations and explicit demo labels.
 
 Server logs narrowed the remaining failure to the final Gemini synthesis call rather than document ingestion. Bounded current-model thinking levels and report length, preserving citation validation. A mobile viewport check also exposed a grid minimum-width issue in the company picker; added a shrinking grid track and child constraints.
+
+After the timeout adjustment, Google returned a transient HTTP 503. Added a single bounded retry to an available lighter text model for managed auto routing when the preferred model times out or returns a transient error. Explicit model overrides are respected. Cache records and the report record the actual extraction and synthesis models used.
