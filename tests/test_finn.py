@@ -152,6 +152,7 @@ def test_model_cache_distinguishes_model_and_format(monkeypatch):
     monkeypatch.setenv('GEMINI_API_KEY','test-key')
     calls = []
     class Response:
+        ok = True
         def raise_for_status(self): pass
         def json(self):
             return {'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':'{"ok":true}'}]}}]}
@@ -306,3 +307,43 @@ def test_expired_exchange_snapshot_is_rejected(monkeypatch,tmp_path):
     monkeypatch.setattr(filings,'SNAPSHOT',path)
     with pytest.raises(ValueError,match='seven-day'):
         filings.captured_rows()
+
+
+def test_vercel_pdf_sampling_keeps_original_page_positions(monkeypatch):
+    monkeypatch.setenv('VERCEL','1')
+    monkeypatch.setattr(documents,'public_url',lambda url:url)
+    extracted = []
+    class Response:
+        is_redirect = False
+        def __enter__(self): return self
+        def __exit__(self,*args): pass
+        def raise_for_status(self): pass
+        def iter_content(self,size): return [b'%PDF-large-sample']
+    class Page:
+        def __init__(self,index): self.index = index
+        def extract_text(self):
+            extracted.append(self.index)
+            return f'Page {self.index + 1}'
+    class PDF:
+        pages = [Page(i) for i in range(100)]
+        def __enter__(self): return self
+        def __exit__(self,*args): pass
+    monkeypatch.setattr(documents.requests,'get',lambda *a,**k:Response())
+    monkeypatch.setattr(documents.pdfplumber,'open',lambda raw:PDF())
+    result = documents.fetch_pdf('https://example.com/large.pdf')
+    assert len(extracted) == 32
+    assert len(result['pages']) == 100
+    assert result['pages'][99] == 'Page 100'
+    assert result['partial'] is True
+    assert 100 in result['extracted_pages']
+    assert '[S1 p100]' in ''.join(documents.chunks(result,'S1'))
+
+
+def test_model_quota_error_is_actionable(monkeypatch):
+    monkeypatch.setenv('GEMINI_API_KEY','test-key')
+    class Response:
+        ok = False
+        status_code = 429
+    monkeypatch.setattr(llm.requests,'post',lambda *a,**k:Response())
+    with pytest.raises(ValueError,match='quota or rate limit'):
+        llm.ask('quota test')

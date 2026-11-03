@@ -4,6 +4,7 @@ import io
 import ipaddress
 import socket
 import re
+import os
 from urllib.parse import urljoin, urlparse, parse_qs
 import pdfplumber
 import requests
@@ -24,7 +25,8 @@ def public_url(url):
 
 
 def fetch_pdf(url):
-    key = 'pdf:v2:' + hashlib.sha256(url.encode()).hexdigest()
+    page_cap = 32 if os.getenv('VERCEL') else 600
+    key = f'pdf:v3:{page_cap}:' + hashlib.sha256(url.encode()).hexdigest()
     cached = cache.get(key, 86400)
     if cached is not None:
         return cached
@@ -54,13 +56,16 @@ def fetch_pdf(url):
         with pdfplumber.open(io.BytesIO(raw)) as pdf:
             if len(pdf.pages) > 600:
                 raise ValueError('Document exceeds 600 page limit.')
-            pages = []
-            for page in pdf.pages:
+            count = len(pdf.pages)
+            selected = set(range(count)) if count <= page_cap else {round(i * (count - 1) / (page_cap - 1)) for i in range(page_cap)}
+            # Preserve original page indices; empty strings denote omitted pages.
+            pages = [''] * count
+            for index in sorted(selected):
                 budget.timeout(45)
-                pages.append(page.extract_text() or '')
+                pages[index] = pdf.pages[index].extract_text() or ''
         if not any(p.strip() for p in pages):
             raise ValueError('Scanned PDF has no extractable text; OCR is not included.')
-        return cache.put(key, {'hash': hashlib.sha256(raw).hexdigest(), 'pages': pages, 'url': url})
+        return cache.put(key, {'hash': hashlib.sha256(raw).hexdigest(), 'pages': pages, 'url': url, 'partial': count > page_cap, 'extracted_pages': [i + 1 for i in sorted(selected)]})
     raise ValueError('Too many document redirects.')
 
 

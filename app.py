@@ -22,6 +22,7 @@ feed_pool = ThreadPoolExecutor(max_workers=2)
 work_pool = ThreadPoolExecutor(max_workers=2)
 jobs, job_keys = {}, {}
 lock = threading.Lock()
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('finn')
 
 

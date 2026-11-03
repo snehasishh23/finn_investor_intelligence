@@ -91,7 +91,7 @@ Vercel-specific behavior:
 - Analysis completes inside the HTTP request; it does not return a process-local background job ID.
 - The configured function duration is 300 seconds, with a request-local 260-second analysis budget. Slow sources can still exhaust that budget; retries reuse caches only when the same warm instance is available.
 - The cache defaults to `/tmp/finn/cache.db` and is ephemeral per instance. It is an optimization, not durable storage or shared state.
-- Research samples at most **2 text chunks per document** by default on Vercel to keep the initial demo practical. Coverage warnings remain visible. `FINN_RESEARCH_CHUNKS` can override this from 1 to 12; local/Render deployments default to 12.
+- On Vercel, PDF reading samples at most **32 evenly spaced pages per document**, retaining original page indices. Research then samples at most **2 text chunks per document** by default on Vercel to keep the initial demo practical. Coverage warnings remain visible. `FINN_RESEARCH_CHUNKS` can override this from 1 to 12; local/Render deployments default to 12.
 - Results extraction can rebuild exchange filing IDs on a cold instance. Source access can still fail if exchange hosts block the deployment region.
 
 See [Vercel deployment notes](docs/VERCEL.md). The [official FastAPI guide](https://vercel.com/docs/frameworks/backend/fastapi) documents entrypoint detection; the [Python runtime guide](https://vercel.com/docs/functions/runtimes/python) documents runtime and dependency selection.

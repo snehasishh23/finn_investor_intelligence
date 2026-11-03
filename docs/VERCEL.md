@@ -14,7 +14,7 @@ Repository: https://github.com/snehasishh23/finn_investor_intelligence
 
 The UI and demo API need no secrets. Enable live model analysis by adding `GEMINI_API_KEY` to the production environment and redeploying. Optional `FAST_MODEL`, `STRONG_MODEL` and `FINN_RESEARCH_CHUNKS` overrides are server-side only.
 
-Do not use a long-lived local database path on Vercel. The default cache path is `/tmp/finn/cache.db`, which is disposable and instance-local. Analysis returns its result within the same request, using a 260-second budget. A production research system would use durable workflow execution and shared storage for longer jobs.
+Do not use a long-lived local database path on Vercel. The default cache path is `/tmp/finn/cache.db`, which is disposable and instance-local. Analysis returns its result within the same request, using a 260-second budget. Large PDFs are limited to 32 evenly spaced text-extraction pages; original page indices and partial-coverage warnings are retained. A production research system would use durable workflow execution and shared storage for longer jobs.
 
 ## Post-deploy verification
 

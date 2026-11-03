@@ -26,7 +26,10 @@ def ask(prompt, tier='fast', as_json=False):
         f'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
         headers={'x-goog-api-key': api_key}, json=body, timeout=budget.timeout(120),
     )
-    response.raise_for_status()
+    if not response.ok:
+        status = response.status_code
+        advice = {400: 'Check the Gemini API key and request configuration.', 401: 'Check the Gemini API key.', 403: 'The key or account does not have access to this model.', 404: 'The configured model is unavailable; update FAST_MODEL or STRONG_MODEL.', 429: 'Provider quota or rate limit reached. Check AI Studio quota or try later.'}.get(status, 'Provider unavailable; retry later.')
+        raise ValueError(f'Gemini returned HTTP {status}. {advice}')
     candidate = response.json()['candidates'][0]
     if candidate.get('finishReason') != 'STOP':
         raise ValueError('Model response was incomplete; please retry.')

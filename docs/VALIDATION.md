@@ -51,3 +51,9 @@ Production URL: https://finn-investor-intelligence-ashen.vercel.app
 Anonymous HTTP checks returned 200 for the homepage, CSS, JavaScript, health endpoint, demo data and TCS demo research. The initial hosted live probe returned 15 portfolio quotes. NSE blocked the deployment region, so a real captured exchange snapshot (68 portfolio records) was added as a clearly dated, seven-day fallback. It preserves original timestamps and filing URLs; the UI explicitly says it is not a current live feed. Two tests cover this fallback and expiry, bringing the suite to 28 tests.
 
 The project was deployed through Vercel Drop after the user signed in and completed Vercel's email verification. The GitHub source remains the canonical repository; pushes do not automatically redeploy this Drop project until Git integration is connected.
+
+## Live-model check and performance adjustment
+
+After the user configured the Vercel secret, `/api/health` reported `research_configured: true`. All four hosted demo research tickers returned 200 and seven sections. Invalid window/mode requests returned 422. The first live TCS request exceeded the 290-second client timeout; live synthesis has not been marked as passing.
+
+Large PDFs on Vercel now extract at most 32 evenly spaced pages, retaining original page positions and partial-coverage warnings. Selected chunks from each document share one extraction call. Provider quota/configuration errors now return an actionable message. Two additional tests cover page-position preservation and provider quota errors (30 tests total).
